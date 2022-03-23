@@ -10,6 +10,7 @@ value = tabula.read_pdf('Tabela-Materias-Unifesp.pdf', pages='all', encoding='ut
 #convert PDF into CSV format
 tabula.convert_into('Tabela-Materias-Unifesp.pdf', 'Materias-Unifesp-test.csv', output_format='csv', pages='all')
 
+
 ########### DEFINE TABLE AS DATAFRAME WITH PANDAS ################
 
 # Input
@@ -38,8 +39,8 @@ column_names = [i for i in range(0, largest_column_count)]
 
 # Read csv
 df = pd.read_csv(data_file, header=None, delimiter=data_file_delimiter, names=column_names)
-#print(df)
 
+# Define the header of the 4-th column
 value = 'Semestre'
 
 # transform column of index 4 in string type
@@ -51,49 +52,33 @@ print(is_string_dtype(df[4]))
 # define the HEADER of the column of index 4
 df.at[0, 4] = value
 
-##### NEW FEATURE ######
+################ COMPARASION WITH THE GRADE HOUR FROM THE SEMESTER ################
 
+# load the file to the
 wb = load_workbook(filename='Matriz horária 1-2022.xlsx')
+
+# load the first sheet of the workbook
 sheet = wb['Matriz Horária para 1º semestre']
-
-name_sample = 'Teoria dos Grafos'
-count = 0
-
-''' FUNCTION THAT SEARCHES THE wb FILE
-for i in range(1, sheet.max_row + 1):
-    for j in range(sheet.max_column):
-        if sheet[i][j].value == name_sample:
-            count += 1
-            #print('Found! ' + f'{count}')
-'''
-
-##### NEW NEW FEATURE #####
 
 # save all the UCs names in a list
 uc_names = df[0].tolist()[1:]
-#print(uc_names)
 
 # save all the UCs names into a dictionary and set them to false
 uc_names_dict = dict.fromkeys(df[0][1:], False)
-#print(uc_names_dict)
 
-
+# Function to compare the values from the workbook file with the dataframe
 def which_semester(uc_name):
     for i in range(1, sheet.max_row + 1):
         for j in range(sheet.max_column):
             if sheet[i][j].value == uc_name:
-                #print(f'Found {uc_name} in this semester!')
                 for name in uc_names_dict:
                     if uc_name == name:
                         uc_names_dict.update({name: True})
                 return
 
+# driver code to compare each UC name from our list of subjects
 for i in range(len(uc_names)):
     which_semester(uc_names[i])
-
-
-#print(df[0][4])
-#print(uc_names_dict)
 
 
 # Insert into the Materias-Unifesp-1.csv file if the semester is IMPAR or PAR
@@ -106,4 +91,5 @@ for k in range(1, len(df[4])):
 # print the full dataframe
 print(df.to_string())
 
+# save the dataframe into an .csv file
 df.to_csv('Materias-Unifesp-Atualizada.csv')
